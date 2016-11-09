@@ -36,4 +36,5 @@ public enum Bayeux: String {
     case successful = "successful"
     case error = "error"
     case advice = "advice"
+    case ext = "ext"
 }

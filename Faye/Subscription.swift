@@ -41,9 +41,9 @@ public class Subscription: CustomStringConvertible, Equatable {
         self.clientID = clientID
     }
     
-    public func toJSONString() throws -> String {
+    public func toJSONString(ext: [String:Any]?) throws -> String {
         do {
-            guard let model = try JSON(toDictionary()).rawString() else {
+            guard let model = try JSON(toDictionary(ext: ext)).rawString(String.Encoding.utf8, options: JSONSerialization.WritingOptions()) else {
                 throw SubscriptionError.conversationError
             }
             
@@ -54,16 +54,22 @@ public class Subscription: CustomStringConvertible, Equatable {
         }
     }
     
-    public func toDictionary() throws -> [String:Any] {
+    public func toDictionary(ext: [String:Any]? = nil) throws -> [String:Any] {
         guard let clientID = clientID else {
             throw SubscriptionError.invalidClientID
         }
         
-        return [
+        var result: [String:Any] = [
             Bayeux.channel.rawValue:channel.rawValue,
             Bayeux.clientID.rawValue:clientID,
             Bayeux.subscription.rawValue:subscription
         ]
+        
+        if let ext = ext {
+            result[Bayeux.ext.rawValue] = ext
+        }
+        
+        return result
     }
     
     // MARK: CustomStringConvertible

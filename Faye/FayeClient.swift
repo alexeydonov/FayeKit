@@ -67,8 +67,8 @@ public class FayeClient: TransportDelegate {
     
     var channelSubscriptionBlocks = [String:ChannelSubscriptionBlock]()
     
-    lazy var pendingSubscriptionSchedule: Timer = {
-        return Timer(timeInterval: 45, target: self, selector: #selector(pendingSubscriptionsAction(_:)), userInfo: nil, repeats: true)
+    lazy var pendingSubscriptionSchedule: Foundation.Timer = {
+        return Foundation.Timer(timeInterval: 45, target: self, selector: #selector(pendingSubscriptionsAction), userInfo: nil, repeats: true)
     }()
     
     let timeout: Int
@@ -76,8 +76,9 @@ public class FayeClient: TransportDelegate {
     let readOperationQueue = DispatchQueue(label: "com.alexeydonov.faye.read")
     let writeOperationQueue = DispatchQueue(label: "com.alexeydonov.faye.write", attributes: DispatchQueue.Attributes.concurrent)
     
-    public init(urlString: String, channel: String?, timeoutAdvice: Int = 10000) {
+    public init(urlString: String, channel: String?, ext: [String:Any]?, timeoutAdvice: Int = 10000) {
         self.urlString = urlString
+        self.ext = ext
         self.connected = false
         self.timeout = timeoutAdvice
         self.transport = WebSocketTransport(urlString: urlString)
@@ -155,7 +156,9 @@ public class FayeClient: TransportDelegate {
     
     // MARK: Implementation
     
-    @objc private func pendingSubscriptionsAction(_ timer: Timer) {
+    private var ext: [String:Any]?
+    
+    @objc private func pendingSubscriptionsAction() {
         guard connected else {
             return
         }
@@ -167,12 +170,15 @@ public class FayeClient: TransportDelegate {
         writeOperationQueue.sync { [unowned self] in
             let connectionTypes: [String] = [BayeuxConnection.longPolling.rawValue, BayeuxConnection.callback.rawValue, BayeuxConnection.iframe.rawValue, BayeuxConnection.webSocket.rawValue]
             
-            let payload: [String:Any] = [
+            var payload: [String:Any] = [
                 Bayeux.channel.rawValue:BayeuxChannel.handshake.rawValue,
                 Bayeux.version.rawValue:"1.0",
                 Bayeux.minimumVersion.rawValue:"1.0beta",
                 Bayeux.supportedConnectionTypes.rawValue:connectionTypes
             ]
+            if let ext = self.ext {
+                payload[Bayeux.ext.rawValue] = ext
+            }
             
             if let s = JSON(payload).rawString() {
                 self.transport?.write(string: s)
@@ -182,12 +188,15 @@ public class FayeClient: TransportDelegate {
     
     private func writeConnectRequest() {
         writeOperationQueue.sync { [unowned self] in
-            let payload: [String:Any] = [
+            var payload: [String:Any] = [
                 Bayeux.channel.rawValue:BayeuxChannel.connect.rawValue,
                 Bayeux.clientID.rawValue:self.clientID!,
                 Bayeux.connectionType.rawValue:BayeuxConnection.webSocket.rawValue,
                 Bayeux.advice.rawValue:["timeout":self.timeout]
             ]
+            if let ext = self.ext {
+                payload[Bayeux.ext.rawValue] = ext
+            }
             
             if let s = JSON(payload).rawString() {
                 self.transport?.write(string: s)
@@ -197,11 +206,14 @@ public class FayeClient: TransportDelegate {
     
     private func writeDisconnectRequest() {
         writeOperationQueue.sync { [unowned self] in
-            let payload: [String:Any] = [
+            var payload: [String:Any] = [
                 Bayeux.channel.rawValue:BayeuxChannel.disconnect.rawValue,
                 Bayeux.clientID.rawValue:self.clientID!,
                 Bayeux.connectionType.rawValue:BayeuxConnection.webSocket.rawValue
             ]
+            if let ext = self.ext {
+                payload[Bayeux.ext.rawValue] = ext
+            }
             
             if let s = JSON(payload).rawString() {
                 self.transport?.write(string: s)
@@ -212,12 +224,12 @@ public class FayeClient: TransportDelegate {
     private func writeSubscribeRequest(to model: Subscription) {
         writeOperationQueue.sync { [unowned self] in
             do {
-                let json = try model.toJSONString()
+                let json = try model.toJSONString(ext: self.ext)
+                
                 self.transport?.write(string: json)
                 self.pendingSubscriptions.append(model)
             }
             catch SubscriptionError.conversationError {
-                
             }
             catch SubscriptionError.invalidClientID where !self.clientID!.isEmpty {
                 model.clientID = self.clientID
@@ -232,11 +244,14 @@ public class FayeClient: TransportDelegate {
     private func writeUnsubscribeRequest(from channel: String) {
         writeOperationQueue.sync { [unowned self] in
             if let clientID = self.clientID {
-                let payload: [String:Any] = [
+                var payload: [String:Any] = [
                     Bayeux.channel.rawValue:BayeuxChannel.unsubscribe.rawValue,
                     Bayeux.clientID.rawValue:clientID,
                     Bayeux.subscription.rawValue:channel
                 ]
+                if let ext = self.ext {
+                    payload[Bayeux.ext.rawValue] = ext
+                }
                 
                 if let s = JSON(payload).rawString() {
                     self.transport?.write(string: s)
@@ -248,12 +263,15 @@ public class FayeClient: TransportDelegate {
     private func publish(data: [String:Any], to channel: String) {
         writeOperationQueue.sync { [weak self] in
             if let clientID = self?.clientID, let messageID = self?.nextMessageID(), let connected = self?.connected, connected {
-                let payload: [String:Any] = [
+                var payload: [String:Any] = [
                     Bayeux.channel.rawValue:channel,
                     Bayeux.clientID.rawValue:clientID,
                     Bayeux.id.rawValue:messageID,
                     Bayeux.data.rawValue:data
                 ]
+                if let ext = self?.ext {
+                    payload[Bayeux.ext.rawValue] = ext
+                }
                 
                 if let s = JSON(payload).rawString() {
                     self?.transport?.write(string: s)
