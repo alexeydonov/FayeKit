@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8AA270B21DD215990087D456"
-               BuildableName = "Faye.framework"
-               BlueprintName = "Faye"
-               ReferencedContainer = "container:Faye.xcodeproj">
+               BuildableName = "FayeKit.framework"
+               BlueprintName = "FayeKit"
+               ReferencedContainer = "container:FayeKit.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,9 +46,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8AA270B21DD215990087D456"
-            BuildableName = "Faye.framework"
-            BlueprintName = "Faye"
-            ReferencedContainer = "container:Faye.xcodeproj">
+            BuildableName = "FayeKit.framework"
+            BlueprintName = "FayeKit"
+            ReferencedContainer = "container:FayeKit.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -64,9 +64,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8AA270B21DD215990087D456"
-            BuildableName = "Faye.framework"
-            BlueprintName = "Faye"
-            ReferencedContainer = "container:Faye.xcodeproj">
+            BuildableName = "FayeKit.framework"
+            BlueprintName = "FayeKit"
+            ReferencedContainer = "container:FayeKit.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

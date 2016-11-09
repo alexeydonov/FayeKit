@@ -20,6 +20,7 @@ public enum SubscriptionState {
 public enum SubscriptionError: Error {
     case conversationError
     case invalidClientID
+    case general(subscription: String, error: String)
 }
 
 public class Subscription: CustomStringConvertible, Equatable {

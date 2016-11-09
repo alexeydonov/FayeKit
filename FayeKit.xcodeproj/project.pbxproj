@@ -8,26 +8,28 @@
 
 /* Begin PBXBuildFile section */
 		8AA270B81DD215990087D456 /* Faye.h in Headers */ = {isa = PBXBuildFile; fileRef = 8AA270B61DD215990087D456 /* Faye.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		8AA270BF1DD215D80087D456 /* Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA270BE1DD215D80087D456 /* Client.swift */; };
+		8AA270BF1DD215D80087D456 /* FayeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA270BE1DD215D80087D456 /* FayeClient.swift */; };
 		8AA270C11DD216260087D456 /* Transport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA270C01DD216260087D456 /* Transport.swift */; };
 		8AA270C31DD216F40087D456 /* Subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA270C21DD216F40087D456 /* Subscription.swift */; };
 		8AA270C51DD218230087D456 /* Bayeux.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA270C41DD218230087D456 /* Bayeux.swift */; };
 		8AA270C71DD21A630087D456 /* WebSocketTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA270C61DD21A630087D456 /* WebSocketTransport.swift */; };
 		8AA270CA1DD21BBD0087D456 /* Starscream.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8AA270C91DD21BBD0087D456 /* Starscream.framework */; };
 		8AA270CD1DD22B300087D456 /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8AA270CC1DD22B300087D456 /* SwiftyJSON.framework */; };
+		8AA270D01DD30A7E0087D456 /* String+Encoded.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA270CF1DD30A7E0087D456 /* String+Encoded.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		8AA270B31DD215990087D456 /* Faye.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Faye.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8AA270B31DD215990087D456 /* FayeKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FayeKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8AA270B61DD215990087D456 /* Faye.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Faye.h; sourceTree = "<group>"; };
 		8AA270B71DD215990087D456 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8AA270BE1DD215D80087D456 /* Client.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Client.swift; sourceTree = "<group>"; };
+		8AA270BE1DD215D80087D456 /* FayeClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FayeClient.swift; sourceTree = "<group>"; };
 		8AA270C01DD216260087D456 /* Transport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transport.swift; sourceTree = "<group>"; };
 		8AA270C21DD216F40087D456 /* Subscription.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Subscription.swift; sourceTree = "<group>"; };
 		8AA270C41DD218230087D456 /* Bayeux.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bayeux.swift; sourceTree = "<group>"; };
 		8AA270C61DD21A630087D456 /* WebSocketTransport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebSocketTransport.swift; sourceTree = "<group>"; };
 		8AA270C91DD21BBD0087D456 /* Starscream.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Starscream.framework; path = Carthage/Build/iOS/Starscream.framework; sourceTree = "<group>"; };
 		8AA270CC1DD22B300087D456 /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = Carthage/Build/iOS/SwiftyJSON.framework; sourceTree = "<group>"; };
+		8AA270CF1DD30A7E0087D456 /* String+Encoded.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "String+Encoded.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,7 +48,7 @@
 		8AA270A91DD215990087D456 = {
 			isa = PBXGroup;
 			children = (
-				8AA270B51DD215990087D456 /* Faye */,
+				8AA270B51DD215990087D456 /* Sources */,
 				8AA270CB1DD21D4F0087D456 /* Metadata */,
 				8AA270B41DD215990087D456 /* Products */,
 				8AA270C81DD21B780087D456 /* Frameworks */,
@@ -56,20 +58,22 @@
 		8AA270B41DD215990087D456 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8AA270B31DD215990087D456 /* Faye.framework */,
+				8AA270B31DD215990087D456 /* FayeKit.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8AA270B51DD215990087D456 /* Faye */ = {
+		8AA270B51DD215990087D456 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
 				8AA270C41DD218230087D456 /* Bayeux.swift */,
-				8AA270BE1DD215D80087D456 /* Client.swift */,
+				8AA270BE1DD215D80087D456 /* FayeClient.swift */,
 				8AA270C01DD216260087D456 /* Transport.swift */,
 				8AA270C21DD216F40087D456 /* Subscription.swift */,
 				8AA270C61DD21A630087D456 /* WebSocketTransport.swift */,
+				8AA270CF1DD30A7E0087D456 /* String+Encoded.swift */,
 			);
+			name = Sources;
 			path = Faye;
 			sourceTree = "<group>";
 		};
@@ -106,22 +110,23 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		8AA270B21DD215990087D456 /* Faye */ = {
+		8AA270B21DD215990087D456 /* FayeKit */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8AA270BB1DD215990087D456 /* Build configuration list for PBXNativeTarget "Faye" */;
+			buildConfigurationList = 8AA270BB1DD215990087D456 /* Build configuration list for PBXNativeTarget "FayeKit" */;
 			buildPhases = (
 				8AA270AE1DD215990087D456 /* Sources */,
 				8AA270AF1DD215990087D456 /* Frameworks */,
 				8AA270B01DD215990087D456 /* Headers */,
 				8AA270B11DD215990087D456 /* Resources */,
+				8AA270CE1DD304890087D456 /* ShellScript */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = Faye;
+			name = FayeKit;
 			productName = Faye;
-			productReference = 8AA270B31DD215990087D456 /* Faye.framework */;
+			productReference = 8AA270B31DD215990087D456 /* FayeKit.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -141,7 +146,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 8AA270AD1DD215990087D456 /* Build configuration list for PBXProject "Faye" */;
+			buildConfigurationList = 8AA270AD1DD215990087D456 /* Build configuration list for PBXProject "FayeKit" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -153,7 +158,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8AA270B21DD215990087D456 /* Faye */,
+				8AA270B21DD215990087D456 /* FayeKit */,
 			);
 		};
 /* End PBXProject section */
@@ -168,6 +173,24 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		8AA270CE1DD304890087D456 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Carthage/Build/iOS/SwiftyJSON.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/Starscream.framework",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/carthage copy-frameworks";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		8AA270AE1DD215990087D456 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -176,7 +199,8 @@
 				8AA270C71DD21A630087D456 /* WebSocketTransport.swift in Sources */,
 				8AA270C31DD216F40087D456 /* Subscription.swift in Sources */,
 				8AA270C51DD218230087D456 /* Bayeux.swift in Sources */,
-				8AA270BF1DD215D80087D456 /* Client.swift in Sources */,
+				8AA270D01DD30A7E0087D456 /* String+Encoded.swift in Sources */,
+				8AA270BF1DD215D80087D456 /* FayeClient.swift in Sources */,
 				8AA270C11DD216260087D456 /* Transport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -300,7 +324,7 @@
 				INFOPLIST_FILE = Faye/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.alexeydonov.Faye;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alexeydonov.FayeKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -325,7 +349,7 @@
 				INFOPLIST_FILE = Faye/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.alexeydonov.Faye;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alexeydonov.FayeKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 3.0;
@@ -335,7 +359,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8AA270AD1DD215990087D456 /* Build configuration list for PBXProject "Faye" */ = {
+		8AA270AD1DD215990087D456 /* Build configuration list for PBXProject "FayeKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8AA270B91DD215990087D456 /* Debug */,
@@ -344,13 +368,14 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8AA270BB1DD215990087D456 /* Build configuration list for PBXNativeTarget "Faye" */ = {
+		8AA270BB1DD215990087D456 /* Build configuration list for PBXNativeTarget "FayeKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8AA270BC1DD215990087D456 /* Debug */,
 				8AA270BD1DD215990087D456 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

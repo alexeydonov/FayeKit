@@ -9,6 +9,11 @@
 import Foundation
 import Starscream
 
+public enum WebSocketError: Error {
+    case lostConnection
+    case transportWire
+}
+
 class WebSocketTransport: Transport, WebSocketDelegate, WebSocketPongDelegate {
     
     var urlString: String?
@@ -24,6 +29,10 @@ class WebSocketTransport: Transport, WebSocketDelegate, WebSocketPongDelegate {
     
     func write(string: String) {
         webSocket?.write(string: string)
+    }
+    
+    func send(ping: Data, completion: (() -> Void)? = nil) {
+        webSocket?.write(ping: ping, completion: completion)
     }
     
     func openConnection() {
@@ -57,7 +66,7 @@ class WebSocketTransport: Transport, WebSocketDelegate, WebSocketPongDelegate {
     
     func websocketDidDisconnect(socket: WebSocket, error: NSError?) {
         if error == nil {
-            delegate?.didDisconnect(error: .lostConnection)
+            delegate?.didDisconnect(error: WebSocketError.lostConnection)
         }
         else {
             delegate?.didFailConnection(error: error)

@@ -9,26 +9,33 @@
 import Foundation
 import SwiftyJSON
 
-public protocol ClientDelegate: NSObjectProtocol {
-    func client(_ client: Client, received dictionary: NSDictionary, in channel: String)
-    func clientReceivedPong(_ client: Client)
-    func clientConnectedToServer(_ client: Client)
-    func clientDisconnectedFromServer(_ client: Client)
-    func clientConnectionFailed(_ client: Client)
-    func client(_ client: Client, subscribedTo channel: String)
-    func client(_ client: Client, unsubscribedFrom channel: String)
-    func client(_ client: Client, failedWithError: Error)
+public protocol FayeClientDelegate: NSObjectProtocol {
+    func fayeClient(_ client: FayeClient, received dictionary: [String:Any], in channel: String)
+    func fayeClientReceivedPong(_ client: FayeClient)
+    func fayeClientConnectedToServer(_ client: FayeClient)
+    func fayeClientDisconnectedFromServer(_ client: FayeClient)
+    func fayeClientConnectionFailed(_ client: FayeClient)
+    func fayeClient(_ client: FayeClient, subscribedTo channel: String)
+    func fayeClient(_ client: FayeClient, unsubscribedFrom channel: String)
+    func fayeClient(_ client: FayeClient, failedWithError: Error)
 }
 
-public extension ClientDelegate {
-    
+public extension FayeClientDelegate {
+    func fayeClient(_ client: FayeClient, received dictionary: [String:Any], in channel: String) { }
+    func fayeClientReceivedPong(_ client: FayeClient) { }
+    func fayeClientConnectedToServer(_ client: FayeClient) { }
+    func fayeClientDisconnectedFromServer(_ client: FayeClient) { }
+    func fayeClientConnectionFailed(_ client: FayeClient) { }
+    func fayeClient(_ client: FayeClient, subscribedTo channel: String) { }
+    func fayeClient(_ client: FayeClient, unsubscribedFrom channel: String) { }
+    func fayeClient(_ client: FayeClient, failedWithError: Error) { }
 }
 
-public typealias ChannelSubscriptionBlock = (NSDictionary) -> Void
+public typealias ChannelSubscriptionBlock = ([String:Any]) -> Void
 
-public class Client: TransportDelegate {
+public class FayeClient: TransportDelegate {
     
-    public weak var delegate: ClientDelegate?
+    public weak var delegate: FayeClientDelegate?
     
     public var clientID: String?
     
@@ -50,7 +57,7 @@ public class Client: TransportDelegate {
         }
     }
     
-    var connectionInitiated: Bool?
+    var connectionInitiated = false
     
     var messageNumber: UInt32 = 0
     
@@ -81,6 +88,71 @@ public class Client: TransportDelegate {
         }
     }
     
+    public func connect() {
+        if !connectionInitiated {
+            transport?.openConnection()
+            connectionInitiated = true
+        }
+    }
+    
+    public func disconnect() {
+        unsubscribeAllSubscriptions()
+        writeDisconnectRequest()
+    }
+    
+    public func send(message: [String:Any], to channel: String) {
+        publish(data: message, to: channel)
+    }
+    
+    public func ping(data: Data, completion: (() -> Void)?) {
+        writeOperationQueue.async { [unowned self] in
+            self.transport?.send(ping: data, completion: completion)
+        }
+    }
+    
+    public func subscribe(_ subscription: Subscription, block: ChannelSubscriptionBlock? = nil) -> SubscriptionState {
+        guard !isSubscribed(to: subscription.subscription) else {
+            return .subscribed(subscription)
+        }
+        
+        guard !pendingSubscriptions.contains(subscription) else {
+            return .pending(subscription)
+        }
+        
+        if let block = block {
+            channelSubscriptionBlocks[subscription.subscription] = block
+        }
+        
+        if !connected {
+            queuedSubscriptions.append(subscription)
+            return .queued(subscription)
+        }
+        
+        writeSubscribeRequest(to: subscription)
+        
+        return .subscribing(subscription)
+    }
+    
+    public func subscribe(to channel: String, block: ChannelSubscriptionBlock? = nil) -> SubscriptionState {
+        return subscribe(Subscription(subscription: channel, clientID: clientID), block: block)
+    }
+    
+    public func unsubscribe(from channel: String) {
+        let _ = removeChannelFromQueuedSubscriptions(channel)
+        writeUnsubscribeRequest(from: channel)
+        channelSubscriptionBlocks[channel] = nil
+        let _ = removeChannelFromOpenSubscriptions(channel)
+        let _ = removeChannelFromPendingSubscriptions(channel)
+    }
+    
+    public func isSubscribed(to channel: String) -> Bool {
+        return openSubscriptions.contains { $0.subscription == channel }
+    }
+    
+    public var isTransportConnected: Bool {
+        return transport!.isConnected
+    }
+    
     // MARK: Implementation
     
     @objc private func pendingSubscriptionsAction(_ timer: Timer) {
@@ -108,7 +180,7 @@ public class Client: TransportDelegate {
         }
     }
     
-    private func connect() {
+    private func writeConnectRequest() {
         writeOperationQueue.sync { [unowned self] in
             let payload: [String:Any] = [
                 Bayeux.channel.rawValue:BayeuxChannel.connect.rawValue,
@@ -123,7 +195,7 @@ public class Client: TransportDelegate {
         }
     }
     
-    private func disconnect() {
+    private func writeDisconnectRequest() {
         writeOperationQueue.sync { [unowned self] in
             let payload: [String:Any] = [
                 Bayeux.channel.rawValue:BayeuxChannel.disconnect.rawValue,
@@ -137,7 +209,7 @@ public class Client: TransportDelegate {
         }
     }
     
-    private func subscribe(to model: Subscription) {
+    private func writeSubscribeRequest(to model: Subscription) {
         writeOperationQueue.sync { [unowned self] in
             do {
                 let json = try model.toJSONString()
@@ -145,19 +217,19 @@ public class Client: TransportDelegate {
                 self.pendingSubscriptions.append(model)
             }
             catch SubscriptionError.conversationError {
-
+                
             }
             catch SubscriptionError.invalidClientID where !self.clientID!.isEmpty {
                 model.clientID = self.clientID
-                self.subscribe(to: model)
+                self.writeSubscribeRequest(to: model)
             }
             catch {
-
+                
             }
         }
     }
-
-    private func unsubscribe(from channel: String) {
+    
+    private func writeUnsubscribeRequest(from channel: String) {
         writeOperationQueue.sync { [unowned self] in
             if let clientID = self.clientID {
                 let payload: [String:Any] = [
@@ -175,7 +247,7 @@ public class Client: TransportDelegate {
     
     private func publish(data: [String:Any], to channel: String) {
         writeOperationQueue.sync { [weak self] in
-            if let clientID = self?.clientID, let messageID = self?.nextMessageID(), self?.connected {
+            if let clientID = self?.clientID, let messageID = self?.nextMessageID(), let connected = self?.connected, connected {
                 let payload: [String:Any] = [
                     Bayeux.channel.rawValue:channel,
                     Bayeux.clientID.rawValue:clientID,
@@ -193,7 +265,7 @@ public class Client: TransportDelegate {
     private func subscribeQueuedSubscriptions() {
         for channel in queuedSubscriptions {
             let _ = removeChannelFromQueuedSubscriptions(channel.subscription)
-            subscribe(to: channel)
+            writeSubscribeRequest(to: channel)
         }
     }
     
@@ -201,18 +273,18 @@ public class Client: TransportDelegate {
         if !pendingSubscriptions.isEmpty {
             for channel in pendingSubscriptions {
                 let _ = removeChannelFromPendingSubscriptions(channel.subscription)
-                subscribe(to: channel)
+                writeSubscribeRequest(to: channel)
             }
         }
     }
 
     private func unsubscribeAllSubscriptions() {
         (queuedSubscriptions + openSubscriptions + pendingSubscriptions).forEach {
-            unsubscribe(from: $0.subscription)
+            writeUnsubscribeRequest(from: $0.subscription)
         }
     }
     
-    private func send(message: NSDictionary) {
+    private func send(message: [String:Any]) {
         writeOperationQueue.async { [unowned self] in
             if let s = JSON(message).rawString() {
                 self.transport?.write(string: s)
@@ -235,10 +307,10 @@ public class Client: TransportDelegate {
             messageNumber = 0
         }
         
-        return "\(messageNumber)"
+        return "\(messageNumber)".encoded
     }
     
-    func removeChannelFromQueuedSubscriptions(_ channel: String) -> Bool {
+    private func removeChannelFromQueuedSubscriptions(_ channel: String) -> Bool {
         objc_sync_enter(queuedSubscriptions)
         defer {
             objc_sync_exit(queuedSubscriptions)
@@ -252,7 +324,7 @@ public class Client: TransportDelegate {
         return false
     }
     
-    func removeChannelFromPendingSubscriptions(_ channel: String) -> Bool {
+    private func removeChannelFromPendingSubscriptions(_ channel: String) -> Bool {
         objc_sync_enter(pendingSubscriptions)
         defer {
             objc_sync_exit(pendingSubscriptions)
@@ -266,7 +338,7 @@ public class Client: TransportDelegate {
         return false
     }
 
-    func removeChannelFromOpenSubscriptions(_ channel: String) -> Bool {
+    private func removeChannelFromOpenSubscriptions(_ channel: String) -> Bool {
         objc_sync_enter(openSubscriptions)
         defer {
             objc_sync_exit(openSubscriptions)
@@ -279,7 +351,69 @@ public class Client: TransportDelegate {
         
         return false
     }
-
+    
+    private func parseFayeMessage(_ message: JSON) {
+        let payload = message[0]
+        if let channel = payload[Bayeux.channel.rawValue].string {
+            if let metaChannel = BayeuxChannel(rawValue: channel) {
+                switch metaChannel {
+                case .handshake:
+                    clientID = payload[Bayeux.clientID.rawValue].stringValue
+                    if payload[Bayeux.successful.rawValue].int == 1 {
+                        delegate?.fayeClientConnectedToServer(self)
+                        connected = true
+                        writeConnectRequest()
+                        subscribeQueuedSubscriptions()
+                        let _ = pendingSubscriptionSchedule.isValid
+                    }
+                    
+                case .connect:
+                    if payload[Bayeux.successful.rawValue].int == 1 {
+                        connected = true
+                        writeConnectRequest()
+                    }
+                    
+                case .disconnect:
+                    if payload[Bayeux.successful.rawValue].int == 1 {
+                        connected = true
+                        transport?.closeConnection()
+                        delegate?.fayeClientDisconnectedFromServer(self)
+                    }
+                    
+                case .subscribe:
+                    if let success = payload[Bayeux.successful.rawValue].int, success == 1 {
+                        if let subscription = payload[Bayeux.subscription.rawValue].string {
+                            let _ = removeChannelFromPendingSubscriptions(subscription)
+                            openSubscriptions.append(Subscription(subscription: subscription, clientID: clientID))
+                            delegate?.fayeClient(self, subscribedTo: subscription)
+                        }
+                    }
+                    else {
+                        if let error = payload[Bayeux.error.rawValue].string,
+                            let subscription = payload[0][Bayeux.subscription.rawValue].string {
+                            let _ = removeChannelFromPendingSubscriptions(subscription)
+                            delegate?.fayeClient(self, failedWithError: SubscriptionError.general(subscription: subscription, error: error))
+                        }
+                    }
+                    
+                case .unsubscribe:
+                    if let subscription = payload[Bayeux.subscription.rawValue].string {
+                        let _ = removeChannelFromOpenSubscriptions(subscription)
+                        delegate?.fayeClient(self, unsubscribedFrom: subscription)
+                    }
+                }
+            }
+            else if isSubscribed(to: channel) {
+                if payload[Bayeux.data.rawValue] != JSON.null, let data = payload[Bayeux.data.rawValue].dictionaryObject {
+                    if let channelBlock = channelSubscriptionBlocks[channel] {
+                        channelBlock(data)
+                    }
+                    delegate?.fayeClient(self, received: data, in: channel)
+                }
+            }
+        }
+    }
+    
     // MARK: TransportDelegate
     
     public func didConnect() {
@@ -288,19 +422,19 @@ public class Client: TransportDelegate {
     }
     
     public func didFailConnection(error: Error?) {
-        delegate?.clientConnectionFailed(self)
+        delegate?.fayeClientConnectionFailed(self)
         connectionInitiated = false
         connected = false
     }
     
     public func didDisconnect(error: Error?) {
-        delegate?.clientDisconnectedFromServer(self)
+        delegate?.fayeClientDisconnectedFromServer(self)
         connectionInitiated = false
         connected = false
     }
     
     public func didWriteError(error: Error?) {
-        delegate?.client(self, failedWithError: error)
+        delegate?.fayeClient(self, failedWithError: error!)
     }
     
     public func didReceiveMessage(text: String) {
@@ -308,7 +442,7 @@ public class Client: TransportDelegate {
     }
     
     public func didReceivePong() {
-        delegate?.clientReceivedPong(self)
+        delegate?.fayeClientReceivedPong(self)
     }
     
 }
