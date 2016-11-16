@@ -98,7 +98,9 @@ public class FayeClient: TransportDelegate {
     
     public func disconnect() {
         unsubscribeAllSubscriptions()
-        writeDisconnectRequest()
+        if connected {
+            writeDisconnectRequest()
+        }
     }
     
     public func send(message: [String:Any], to channel: String) {
