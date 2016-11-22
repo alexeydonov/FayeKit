@@ -118,7 +118,6 @@
 				8AA270AF1DD215990087D456 /* Frameworks */,
 				8AA270B01DD215990087D456 /* Headers */,
 				8AA270B11DD215990087D456 /* Resources */,
-				8AA270CE1DD304890087D456 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -172,24 +171,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		8AA270CE1DD304890087D456 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Carthage/Build/iOS/SwiftyJSON.framework",
-				"$(SRCROOT)/Carthage/Build/iOS/Starscream.framework",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/usr/local/bin/carthage copy-frameworks";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8AA270AE1DD215990087D456 /* Sources */ = {
