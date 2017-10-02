@@ -75,7 +75,7 @@ public class Subscription: CustomStringConvertible, Equatable {
     // MARK: CustomStringConvertible
     
     public var description: String {
-        return "Subscription: \(try? self.toDictionary())"
+        return "Subscription: \(String(describing: try! self.toDictionary()))"
     }
     
 }

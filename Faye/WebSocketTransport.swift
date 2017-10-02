@@ -15,7 +15,6 @@ public enum WebSocketError: Error {
 }
 
 class WebSocketTransport: Transport, WebSocketDelegate, WebSocketPongDelegate {
-    
     var urlString: String?
     var webSocket: WebSocket?
     
@@ -60,11 +59,11 @@ class WebSocketTransport: Transport, WebSocketDelegate, WebSocketPongDelegate {
     
     // MARK: WebSocketDelegate
     
-    func websocketDidConnect(socket: WebSocket) {
+    func websocketDidConnect(socket: WebSocketClient) {
         delegate?.didConnect()
     }
     
-    func websocketDidDisconnect(socket: WebSocket, error: NSError?) {
+    func websocketDidDisconnect(socket: WebSocketClient, error: Error?) {
         if error == nil {
             delegate?.didDisconnect(error: WebSocketError.lostConnection)
         }
@@ -73,15 +72,15 @@ class WebSocketTransport: Transport, WebSocketDelegate, WebSocketPongDelegate {
         }
     }
     
-    func websocketDidReceiveMessage(socket: WebSocket, text: String) {
+    func websocketDidReceiveMessage(socket: WebSocketClient, text: String) {
         delegate?.didReceiveMessage(text: text)
     }
     
-    func websocketDidReceiveData(socket: WebSocket, data: Data) {
+    func websocketDidReceiveData(socket: WebSocketClient, data: Data) {
         
     }
     
-    func websocketDidReceivePong(socket: WebSocket, data: Data?) {
+    func websocketDidReceivePong(socket: WebSocketClient, data: Data?) {
         delegate?.didReceivePong()
     }
     
